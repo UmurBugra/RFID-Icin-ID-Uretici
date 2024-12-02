@@ -1,5 +1,25 @@
 import random
 from datetime import datetime
+import json
+
+# JSON dosya adı
+VERITABANI = "uretilen_numaralar.json"
+
+
+def veritabani_yukle():
+
+    try:
+        dosya = open(VERITABANI, 'r')
+        numaralar = json.load(dosya)
+        dosya.close()
+    except FileNotFoundError:
+        numaralar = []
+    return numaralar
+
+def veritabanina_kaydet(numaralar):
+    # Numaraları JSON dosyasına kaydet
+    with open(VERITABANI, 'w') as dosya:
+        json.dump(numaralar, dosya)
 
 
 def numara_uret():
@@ -27,17 +47,26 @@ def numara_uret():
 
     # 6. Kural: 8. hane hesaplama
     toplam = 0
-    for i in numara:
-        toplam += int(i)
+    for rakam in numara:
+        toplam += int(rakam)
     sekizinci_hane = str(toplam % 7)
     numara += sekizinci_hane
 
     return numara
 
-def test():
-    uretilen_numara = numara_uret()
-    print(f"Üretilen numara: {uretilen_numara}")
-    return uretilen_numara
+
+def benzersiz_numara_uret():
+    # Mevcut numaraları yükle
+    numaralar = veritabani_yukle()
+
+    # Benzersiz numara üret
+    while True:
+        yeni_numara = numara_uret()
+        if yeni_numara not in numaralar:
+            numaralar.append(yeni_numara)
+            veritabanina_kaydet(numaralar)
+            return yeni_numara
+
 
 if __name__ == "__main__":
-    test()
+    print("Üretilen numara:", benzersiz_numara_uret())
