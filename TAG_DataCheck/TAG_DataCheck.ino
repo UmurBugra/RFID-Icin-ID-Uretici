@@ -49,6 +49,7 @@ void loop() {
   status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, blok, &key, &(mfrc522.uid));
   if (status != MFRC522::STATUS_OK) {
     Serial.println("Kimlik doğrulama hatası!");
+    delay(1000);
     return;
   }
 
