@@ -9,18 +9,17 @@ VERITABANI = "uretilen_numaralar.json"
 def veritabani_yukle():
 
     try:
-        dosya = open(VERITABANI, 'r')
-        numaralar = json.load(dosya)
-        dosya.close()
+        with open(VERITABANI, 'r') as dosya:
+            numaralar = json.load(dosya)
+
     except FileNotFoundError:
         numaralar = []
     return numaralar
 
 def veritabanina_kaydet(numaralar):
-    # Numaraları JSON dosyasına kaydet
+
     with open(VERITABANI, 'w') as dosya:
         json.dump(numaralar, dosya)
-
 
 def numara_uret():
     # 1. Kural: İlk hane 1-9 arası rastgele
