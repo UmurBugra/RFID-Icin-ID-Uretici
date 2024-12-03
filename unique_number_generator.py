@@ -1,7 +1,7 @@
 import serial
-import time
 from datetime import datetime
 import json
+import random
 
 SERIAL_PORT = 'COM7'  # Port numaranız
 BAUD_RATE = 115200
@@ -10,7 +10,6 @@ VERITABANI = "uretilen_numaralar.json"
 
 def numara_uret():
     # 1. Kural: İlk hane 1-9 arası rastgele
-    import random
     numara = str(random.randint(1, 9))
 
     # 2. Kural: Saniye bilgisi 2. ve 3. hanelere
@@ -41,6 +40,7 @@ def numara_uret():
 
     return numara
 
+
 def veritabani_yukle():
     try:
         with open(VERITABANI, 'r') as dosya:
@@ -68,7 +68,7 @@ def benzersiz_numara_uret():
 def main():
     try:
         ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1)
-        print("RFID TAG okutun...")
+        print("RFID TAG okut...")
 
         while True:
             if ser.in_waiting:
@@ -85,7 +85,6 @@ def main():
     except Exception as e:
         print(f"Beklenmeyen hata: {e}")
         print("Program sonlandırılıyor...")
-
 
 if __name__ == "__main__":
     main()
