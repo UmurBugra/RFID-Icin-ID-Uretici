@@ -41,7 +41,6 @@ def numara_uret():
 
     return numara
 
-
 def veritabani_yukle():
     try:
         with open(VERITABANI, 'r') as dosya:
