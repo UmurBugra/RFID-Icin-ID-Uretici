@@ -1,28 +1,16 @@
-import random
+import serial
+import time
 from datetime import datetime
 import json
 
-# JSON dosya adı
+SERIAL_PORT = 'COM7'  # Port numaranız
+BAUD_RATE = 115200
+
 VERITABANI = "uretilen_numaralar.json"
-
-
-def veritabani_yukle():
-
-    try:
-        with open(VERITABANI, 'r') as dosya:
-            numaralar = json.load(dosya)
-
-    except FileNotFoundError:
-        numaralar = []
-    return numaralar
-
-def veritabanina_kaydet(numaralar):
-
-    with open(VERITABANI, 'w') as dosya:
-        json.dump(numaralar, dosya)
 
 def numara_uret():
     # 1. Kural: İlk hane 1-9 arası rastgele
+    import random
     numara = str(random.randint(1, 9))
 
     # 2. Kural: Saniye bilgisi 2. ve 3. hanelere
@@ -54,11 +42,22 @@ def numara_uret():
     return numara
 
 
-def benzersiz_numara_uret():
-    # Mevcut numaraları yükle
-    numaralar = veritabani_yukle()
+def veritabani_yukle():
+    try:
+        with open(VERITABANI, 'r') as dosya:
+            numaralar = json.load(dosya)
+    except FileNotFoundError:
+        numaralar = []
+    return numaralar
 
-    # Benzersiz numara üret
+
+def veritabanina_kaydet(numaralar):
+    with open(VERITABANI, 'w') as dosya:
+        json.dump(numaralar, dosya)
+
+
+def benzersiz_numara_uret():
+    numaralar = veritabani_yukle()
     while True:
         yeni_numara = numara_uret()
         if yeni_numara not in numaralar:
@@ -67,5 +66,27 @@ def benzersiz_numara_uret():
             return yeni_numara
 
 
+def main():
+    try:
+        ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1)
+        print("RFID TAG okutun...")
+
+        while True:
+            if ser.in_waiting:
+                gelen_veri = ser.readline().decode('utf-8').strip()
+
+                if gelen_veri == "YENI_KART":
+                    yeni_numara = benzersiz_numara_uret()
+                    print(f"Üretilen yeni numara: {yeni_numara}")
+                    ser.write(f"{yeni_numara}\n".encode('utf-8'))
+
+    except serial.SerialException as e:
+        print(f"Seri port hatası: {e}")
+        print("Program sonlandırılıyor...")
+    except Exception as e:
+        print(f"Beklenmeyen hata: {e}")
+        print("Program sonlandırılıyor...")
+
+
 if __name__ == "__main__":
-    print("Üretilen numara:", benzersiz_numara_uret())
+    main()
