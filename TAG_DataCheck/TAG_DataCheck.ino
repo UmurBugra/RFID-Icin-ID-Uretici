@@ -59,7 +59,7 @@ void loop() {
     Serial.print(" içeriği: ");
     
     for (uint8_t i = 0; i < 16; i++) {
-      if (buffer[i] >= 32 && buffer[i] <= 126) {  // Yazdırılabilir karakterler
+      if (buffer[i] >= 32 && buffer[i] <= 126) { 
         Serial.write(buffer[i]);
       } else {
         Serial.print(".");
