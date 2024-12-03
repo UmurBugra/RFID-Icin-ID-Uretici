@@ -76,7 +76,6 @@ void loop() {
   } else {
     Serial.println("Okuma hatası!");
   }
-
   mfrc522.PICC_HaltA();
   mfrc522.PCD_StopCrypto1();
   delay(1000);
