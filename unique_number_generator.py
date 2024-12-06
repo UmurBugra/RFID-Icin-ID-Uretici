@@ -2,39 +2,28 @@ import serial
 from datetime import datetime
 import json
 import random
+import time
 
 SERIAL_PORT = 'COM7'  # Port numaranız
-BAUD_RATE = 115200
-
+BAUD_RATE = 115200 # Ayarladığınız Baud rate
 VERITABANI = "uretilen_numaralar.json"
 
-def numara_uret():
-    # 1. Kural: İlk hane 1-9 arası rastgele
-    numara = str(random.randint(1, 9))
 
-    # 2. Kural: Saniye bilgisi 2. ve 3. hanelere
+def numara_uret():
+    numara = str(random.randint(1, 9))
     saniye = datetime.now().second
     numara += str(saniye // 10) + str(saniye % 10)
 
-    # 4-6. haneler için rastgele sayılar (0-9 arası)
     for i in range(3):
-        rastgele_sayi = str(random.randint(0, 9))
-        numara += rastgele_sayi
+        numara += str(random.randint(0, 9))
 
-    # 3. Kural: 1, 3 ve 5. hanelerin toplamı * 8
     tek_toplam = (int(numara[0]) + int(numara[2]) + int(numara[4])) * 8
-
-    # 4. Kural: 2, 4 ve 6. hanelerin toplamı * 8
     cift_toplam = (int(numara[1]) + int(numara[3]) + int(numara[5])) * 8
 
-    # 5. Kural: 7. hane hesaplama
     yedinci_hane = str((tek_toplam + cift_toplam) % 10)
     numara += yedinci_hane
 
-    # 6. Kural: 8. hane hesaplama
-    toplam = 0
-    for rakam in numara:
-        toplam += int(rakam)
+    toplam = sum(int(rakam) for rakam in numara)
     sekizinci_hane = str(toplam % 7)
     numara += sekizinci_hane
 
@@ -44,10 +33,9 @@ def numara_uret():
 def veritabani_yukle():
     try:
         with open(VERITABANI, 'r') as dosya:
-            numaralar = json.load(dosya)
+            return json.load(dosya)
     except FileNotFoundError:
-        numaralar = []
-    return numaralar
+        return []
 
 
 def veritabanina_kaydet(numaralar):
@@ -68,7 +56,7 @@ def benzersiz_numara_uret():
 def main():
     try:
         ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1)
-        print("RFID TAG okut...")
+        print("Sistem hazır...")
 
         while True:
             if ser.in_waiting:
@@ -76,15 +64,31 @@ def main():
 
                 if gelen_veri == "YENI_KART":
                     yeni_numara = benzersiz_numara_uret()
-                    print(f"Üretilen yeni numara: {yeni_numara}")
+                    print(f"Üretilen numara: {yeni_numara}")
                     ser.write(f"{yeni_numara}\n".encode('utf-8'))
+                    ser.flush()  # Buffer'ı temizle
+                    time.sleep(0.1)  # Kısa bir bekleme ekle
+
+                elif gelen_veri == "KART_DOLU":
+                    print("Kart depolama alanı dolu!")
+
+                elif gelen_veri.startswith("YAZMA_OK"):
+                    print("Numara başarıyla yazıldı.")
+
+                elif gelen_veri.startswith("YAZMA_HATA"):
+                    print("Yazma işlemi başarısız oldu!")
+
+            time.sleep(0.1)
 
     except serial.SerialException as e:
         print(f"Seri port hatası: {e}")
-        print("Program sonlandırılıyor...")
     except Exception as e:
         print(f"Beklenmeyen hata: {e}")
+    finally:
+        if 'ser' in locals():
+            ser.close()
         print("Program sonlandırılıyor...")
+
 
 if __name__ == "__main__":
     main()
