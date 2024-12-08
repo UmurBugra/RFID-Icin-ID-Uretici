@@ -23,7 +23,9 @@ def numara_uret():
     yedinci_hane = str((tek_toplam + cift_toplam) % 10)
     numara += yedinci_hane
 
-    toplam = sum(int(rakam) for rakam in numara)
+    toplam = 0
+    for rakam in numara:
+        toplam += int(rakam)
     sekizinci_hane = str(toplam % 7)
     numara += sekizinci_hane
 
